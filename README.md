@@ -14,7 +14,7 @@ Each part can be independently executed; however, a perfect program is the conca
 The whole program looks like this:
 - Part 1: Lines of code for generating raw data and saving the raw data.
       
-- Part 2: Lines of code for extracting useful information from the data and saving the useful data.
+- Part 2: Lines of code for extracting useful information from the raw data and saving the useful data.
       
 - Part 3: Lines of code for training a DNN with the useful data and saving the trained model.
       
