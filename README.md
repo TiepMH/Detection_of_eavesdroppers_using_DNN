@@ -24,4 +24,6 @@ The whole program looks like this:
 Important object-oriented classes and functions are in the "library" folder.
 
 ---
-- Style: PEP 8
+Styles:
+- Object-oriented programming
+- PEP 8
