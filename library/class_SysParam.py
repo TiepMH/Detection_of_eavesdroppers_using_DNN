@@ -3,14 +3,24 @@ import pickle
 
 class SystemParameters:
     def __init__(self, No_Attack=True):
-        self.snrdB = 15
-        self.snr = 10**(self.snrdB/10)
+        self.snrdB_Bob = 10
+        self.snrdB_Eve = 4
+        ###
+        self.SNR_Bob = 10**(self.snrdB_Bob/10)
+        self.SNR_Eve = 10**(self.snrdB_Eve/10)
+        self.list_of_SNRs = [self.SNR_Bob, self.SNR_Eve]
+        ###
         self.n_Rx = 10
         self.n_Tx = self.num_of_Tx(No_Attack)
+        ###
         self.DOA_Bob = - 40.5  # from -90 degree to +90 degree
         self.DOA_Eve = None  # from -90 degree to +90 degree
         self.list_of_DOAs = self.DOAs_of_Tx(No_Attack)
         self.num_angles = 180
+        ###
+        self.Rician_factor = 2.0
+        self.n_NLOS_paths = 10
+        self.max_delta_theta = 60.0  # 60 degree
 
     def num_of_Tx(self, No_Attack):
         if No_Attack is True:

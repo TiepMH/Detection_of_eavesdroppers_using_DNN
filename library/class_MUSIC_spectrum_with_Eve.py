@@ -7,12 +7,14 @@ import scipy.linalg as LA
 import scipy.signal as ss
 
 
-class MUSIC_spectrum:
+class MUSIC_spectrum_with_Eve:
 
-    def __init__(self, snr, n_Rx, n_Tx, num_angles, list_of_DOAs):
+    def __init__(self, list_of_SNRs, n_Rx, n_Tx,
+                 num_angles, list_of_DOAs,
+                 kappa, n_NLOS_paths, max_delta_theta):
         # np.random.seed(6)
         self.PI = np.pi
-        self.snr = snr  # signal-to-noise ratio
+        self.SNRs = list_of_SNRs  # signal-to-noise ratio
         self.n_Rx = n_Rx  # number of ULA elements = NA
         self.n_Tx = n_Tx   # number of transmitters
         # DOAs = np.random.uniform(-PI/2, PI/2, n_Tx)  # the nominal DOAs of all transmitters
@@ -20,12 +22,12 @@ class MUSIC_spectrum:
         self.DOAs = self.DOAs_in_degree*self.PI/180
 
         # Path loss
-        self.PL_LOS = 0.75  # k/(k+1) goes to 1 when k is large enough
-        self.PL_NLOS = 0.25  # k=19, then 1/(k+1) = 1/20
+        self.PL_LOS = kappa/(kappa + 1)  # k/(k+1) goes to 1 when k is large enough
+        self.PL_NLOS = 1/(kappa + 1)  # for example, k=19, then 1/(k+1) = 1/20
 
         # NLOS components
-        self.num_NLOS_paths = 10
-        self.max_delta_theta = self.PI/3  # 60 degree
+        self.num_NLOS_paths = n_NLOS_paths
+        self.max_delta_theta = max_delta_theta*self.PI/180  # in radian
 
         # For calculating the sample covariance matrix
         self.num_samples = 2**6  # this is also # of time slots per window
@@ -87,6 +89,7 @@ class MUSIC_spectrum:
                 pha_i = np.exp(1j*2*self.PI*np.random.rand(1))
                 signal_i = self.signals[i]
                 DOA_i = self.DOAs[i]
+                SNR_i = self.SNRs[i]
                 LOS_component = signal_i * self.response_to_an_angle(DOA_i) * pha_i
                 NLOS_components = 0
                 for j in range(self.num_NLOS_paths):
@@ -94,11 +97,13 @@ class MUSIC_spectrum:
                                                    self.max_delta_theta)
                     NLOS_components += signal_i * self.response_to_an_angle(DOA_NLOS_j) * pha_i
                 # end of for_j loop
-                htmp = htmp + np.sqrt(self.PL_LOS)*LOS_component \
-                        + np.sqrt(self.PL_NLOS)*NLOS_components
+                htmp = htmp + np.sqrt(SNR_i)*(
+                                                    np.sqrt(self.PL_LOS)*LOS_component
+                                                    + np.sqrt(self.PL_NLOS)*NLOS_components
+                                                )
             # end of for_i loop
-            noise = np.sqrt(0.5/self.snr)*(np.random.randn(self.n_Rx, 1)
-                                           + 1j*np.random.randn(self.n_Rx, 1))
+            noise = np.sqrt(0.5)*(np.random.randn(self.n_Rx, 1)
+                                  + 1j*np.random.randn(self.n_Rx, 1))
             received_signal = htmp + noise
             H[:, iter] = received_signal.reshape(self.n_Rx)
         CovMat = H @ np.conj(H.T)  # np.matmul(H, np.conj(H).T)

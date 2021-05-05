@@ -25,7 +25,6 @@ with open('input/mySysParam.pickle', 'rb') as file:
     SysParam = pickle.load(file)
 
 ###
-snr = SysParam.snr
 n_Rx = SysParam.n_Rx
 n_Tx = SysParam.n_Tx
 list_of_DOAs = SysParam.list_of_DOAs  # from -90 degree to +90 degree

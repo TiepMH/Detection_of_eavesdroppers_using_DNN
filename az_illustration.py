@@ -66,8 +66,8 @@ anomalous_imgs_test_encoded = model.encoder(anomalous_imgs_test).numpy()
 anomalous_imgs_test_decoded = model.decoder(anomalous_imgs_test_encoded).numpy()
 #
 plt.figure(3)
-plot_an_anomalous_img_and_its_reconstruction(anomalous_imgs_test[0],
-                                             anomalous_imgs_test_decoded[0],
+plot_an_anomalous_img_and_its_reconstruction(anomalous_imgs_test[3],
+                                             anomalous_imgs_test_decoded[3],
                                              angles)
 plt.ylim(ymax=0.1)
 

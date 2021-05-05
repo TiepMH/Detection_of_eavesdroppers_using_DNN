@@ -2,8 +2,14 @@
 # https://github.com/dengjunquan/DoA-Estimation-MUSIC-ESPRIT
 
 import numpy as np
-from library.class_MUSIC_spectrum_without_Eve import MUSIC_spectrum
+import pickle
+from library.class_MUSIC_spectrum_without_Eve import MUSIC_spectrum_without_Eve
+from library.class_MUSIC_spectrum_with_Eve import MUSIC_spectrum_with_Eve
 from library.class_SysParam import SystemParameters
+
+import os
+from pathlib import Path
+cur_path = os.path.abspath(os.getcwd())  # path to library
 
 
 """ No_Attack = True    >>>    There is no attack from any eavesdropper
@@ -13,19 +19,32 @@ from library.class_SysParam import SystemParameters
 
 # =============================================================================
 def generate_spectrums(No_Attack):
-    """ Load system parameters """
+    """ Create system parameters and save them """
     SysParam = SystemParameters(No_Attack)
-    snr = SysParam.snr
+    # save the SysParam object as a pickle-type file
+    with open(os.path.join(cur_path, 'input/mySysParam.pickle'), 'wb') as temp:
+        pickle.dump(SysParam, temp)
+    """ Load system parameters """
+    list_of_SNRs = SysParam.list_of_SNRs
     n_Rx = SysParam.n_Rx
     n_Tx = SysParam.n_Tx
     list_of_DOAs = SysParam.list_of_DOAs  # from -90 degree to +90 degree
     num_angles = SysParam.num_angles
+    kappa = SysParam.Rician_factor
+    n_NLOS_paths = SysParam.n_NLOS_paths
+    max_delta_theta = SysParam.max_delta_theta
     ###
     table = np.empty([0, num_angles])
     num_windows = 1000
     for i in range(num_windows):
-        mySpectrum = MUSIC_spectrum(snr, n_Rx, n_Tx,
-                                    num_angles, list_of_DOAs)
+        if No_Attack is False:  # WITH Eve
+            mySpectrum = MUSIC_spectrum_with_Eve(list_of_SNRs, n_Rx, n_Tx,
+                                                 num_angles, list_of_DOAs,
+                                                 kappa, n_NLOS_paths, max_delta_theta)
+        if No_Attack is True:  # WITHOUT Eve
+            mySpectrum = MUSIC_spectrum_without_Eve(list_of_SNRs, n_Rx, n_Tx,
+                                                    num_angles, list_of_DOAs,
+                                                    kappa, n_NLOS_paths, max_delta_theta)
         DoAs_MUSIC, spectrum_dB = mySpectrum.music()
         # DoAs_MUSIC is of integer type
         hv, powers = mySpectrum.correlation()
